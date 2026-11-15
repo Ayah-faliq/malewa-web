@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { categories } from "@/data/products";
+import { categories } from "@/data/catalog";
 import { getI18n } from "@/i18n/server";
 
 export default async function Footer() {
@@ -27,8 +27,8 @@ export default async function Footer() {
         <div>
           <h3 className="mb-3 font-bold text-brand">{t.footer.partners}</h3>
           <ul className="space-y-2 text-sm">
-            <li>{t.footer.join}</li>
-            <li>{t.footer.help}</li>
+            <li><Link href="/mitra/daftar" className="hover:text-white">{t.footer.join}</Link></li>
+            <li><Link href="/mitra/masuk" className="hover:text-white">{t.footer.help}</Link></li>
           </ul>
         </div>
         <div>

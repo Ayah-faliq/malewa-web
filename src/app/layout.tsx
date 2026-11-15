@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Alfa_Slab_One } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { LocaleProvider } from "@/i18n/client";
 import { getI18n } from "@/i18n/server";
 
@@ -22,9 +20,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <body className={`${jakarta.variable} ${display.variable} font-sans antialiased`}>
         <LocaleProvider locale={locale}>
           <CartProvider>
-            <Header />
-            <main className="min-h-[60vh]">{children}</main>
-            <Footer />
+            {children}
           </CartProvider>
         </LocaleProvider>
       </body>

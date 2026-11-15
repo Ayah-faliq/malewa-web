@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getCategory, getProduct } from "@/data/products";
+import { getCategory, type Product } from "@/data/catalog";
 import { localizeProduct, unitText } from "@/data/localize";
 import { useCart } from "@/context/CartContext";
 import { useI18n } from "@/i18n/client";
@@ -14,9 +14,9 @@ function todayPlus(days: number) {
   return d.toISOString().slice(0, 10);
 }
 
-export default function BookingForm({ slug }: { slug: string }) {
+export default function BookingForm({ product }: { product: Product }) {
   const { locale, t } = useI18n();
-  const p = localizeProduct(getProduct(slug)!, locale);
+  const p = localizeProduct(product, locale);
   const cat = getCategory(p.category)!;
   const text = t.categories[cat.slug];
   const { add } = useCart();
@@ -30,7 +30,7 @@ export default function BookingForm({ slug }: { slug: string }) {
 
   function submit(goToCart: boolean) {
     add({
-      productSlug: p.slug,
+      product,
       qty,
       duration: cat.hasDuration ? duration : 1,
       date: cat.hasDate ? date : undefined,

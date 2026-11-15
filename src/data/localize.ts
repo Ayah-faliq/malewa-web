@@ -1,31 +1,26 @@
 import { getDict, localeMeta, type Locale } from "@/i18n/dictionaries";
-import { getCategory, type Product } from "./products";
-import { productTranslations } from "./products.i18n";
+import type { Product } from "./catalog";
 
-/** Kembalikan produk dengan nama, deskripsi, dan highlight dalam bahasa yang dipilih. */
+/** Kembalikan produk dengan nama, deskripsi, dan highlight dalam bahasa yang dipilih (jatuh ke Indonesia). */
 export function localizeProduct(p: Product, locale: Locale): Product {
   if (locale === "id") return p;
-  const tr = productTranslations[p.slug]?.[locale];
+  const tr = p.tr?.[locale];
   return tr ? { ...p, ...tr } : p;
-}
-
-export function categoryText(slug: string, locale: Locale) {
-  return getDict(locale).categories[slug];
 }
 
 export function unitText(p: Product, locale: Locale) {
   return getDict(locale).units[p.unit] ?? "";
 }
 
+const allDicts = () => (["id", "en", "ms"] as const).map((l) => getDict(l));
+
 /** Teks yang bisa dicari: semua bahasa sekaligus, jadi "rendang" atau "beef" sama-sama ketemu. */
 export function searchableText(p: Product) {
-  const tr = productTranslations[p.slug];
-  const cat = getCategory(p.category);
   return [
     p.name, p.city, p.province, p.partner, p.description,
-    tr?.en.name, tr?.en.description, tr?.ms.name, tr?.ms.description,
-    cat ? Object.values({ id: getDict("id"), en: getDict("en"), ms: getDict("ms") }).map((d) => d.categories[cat.slug].name).join(" ") : "",
-    p.sub ? ["id", "en", "ms"].map((l) => getDict(l as Locale).subcategories[p.sub!]).join(" ") : "",
+    p.tr?.en?.name, p.tr?.en?.description, p.tr?.ms?.name, p.tr?.ms?.description,
+    ...allDicts().map((d) => d.categories[p.category]?.name),
+    ...(p.sub ? allDicts().map((d) => d.subcategories[p.sub!]) : []),
   ]
     .filter(Boolean)
     .join(" ")

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Product } from "@/data/products";
+import type { Product } from "@/data/catalog";
 import { localizeProduct, unitText } from "@/data/localize";
 import { getDict, type Locale } from "@/i18n/dictionaries";
 import { count, rupiah } from "@/lib/format";
@@ -16,7 +16,7 @@ export default function ProductCard({ p: raw, locale }: { p: Product; locale: Lo
       className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-lg"
     >
       <div className="relative">
-        <ProductImage colors={p.colors} emoji={p.emoji} className="aspect-[4/3]" />
+        <ProductImage colors={p.colors} emoji={p.emoji} src={p.imageUrl} alt={p.name} className="aspect-[4/3]" />
         <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-semibold text-white">{label}</span>
         {discount > 0 && (
           <span className="absolute right-2 top-2 rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-white">

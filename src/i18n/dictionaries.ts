@@ -45,6 +45,7 @@ export type Dict = {
     payNote: string; yourOrder: string; promoPh: string; apply: string; promoInvalid: string; promoApplied: (c: string) => string;
     subtotal: string; discount: string; shipping: string; serviceFee: string; total: string; pay: string; processing: string;
     payments: Record<string, string>;
+    errors: Record<"invalid" | "unavailable" | "address", string>;
   };
   order: {
     loading: string; notFound: (c: string) => string; paidTitle: string; payTitle: string; code: string; method: string;
@@ -114,6 +115,7 @@ const id: Dict = {
     yourOrder: "Pesanan Anda", promoPh: "Kode promo", apply: "Pakai", promoInvalid: "Kode promo tidak valid", promoApplied: (c) => `✔ Promo ${c} dipakai`,
     subtotal: "Subtotal", discount: "Diskon promo", shipping: "Ongkir", serviceFee: "Biaya layanan", total: "Total bayar", pay: "Bayar sekarang", processing: "Memproses...",
     payments: { "va-bni": "Virtual Account BNI", "va-bsi": "Virtual Account BSI", "va-nagari": "Virtual Account Bank Nagari", qris: "QRIS (semua e-wallet & m-banking)", ewallet: "GoPay / OVO / DANA", cc: "Kartu Kredit / Debit" },
+    errors: { invalid: "Data belum lengkap atau tidak valid. Periksa kembali isian Anda.", unavailable: "Ada produk di keranjang yang sudah tidak tersedia. Hapus lalu coba lagi.", address: "Alamat pengiriman wajib diisi." },
   },
   order: {
     loading: "Memuat pesanan...", notFound: (c) => `Pesanan ${c} tidak ditemukan`, paidTitle: "Pembayaran berhasil!", payTitle: "Selesaikan pembayaran",
@@ -189,6 +191,7 @@ const en: Dict = {
     yourOrder: "Your order", promoPh: "Promo code", apply: "Apply", promoInvalid: "Invalid promo code", promoApplied: (c) => `✔ Promo ${c} applied`,
     subtotal: "Subtotal", discount: "Promo discount", shipping: "Shipping", serviceFee: "Service fee", total: "Total", pay: "Pay now", processing: "Processing...",
     payments: { "va-bni": "BNI Virtual Account", "va-bsi": "BSI Virtual Account", "va-nagari": "Bank Nagari Virtual Account", qris: "QRIS (all e-wallets & mobile banking)", ewallet: "GoPay / OVO / DANA", cc: "Credit / Debit card" },
+    errors: { invalid: "Some details are missing or invalid. Please check the form.", unavailable: "A product in your cart is no longer available. Remove it and try again.", address: "Shipping address is required." },
   },
   order: {
     loading: "Loading order...", notFound: (c) => `Order ${c} not found`, paidTitle: "Payment successful!", payTitle: "Complete your payment",
@@ -264,6 +267,7 @@ const ms: Dict = {
     yourOrder: "Pesanan anda", promoPh: "Kod promosi", apply: "Guna", promoInvalid: "Kod promosi tidak sah", promoApplied: (c) => `✔ Promosi ${c} digunakan`,
     subtotal: "Subjumlah", discount: "Diskaun promosi", shipping: "Penghantaran", serviceFee: "Caj perkhidmatan", total: "Jumlah bayaran", pay: "Bayar sekarang", processing: "Memproses...",
     payments: { "va-bni": "Akaun Maya BNI", "va-bsi": "Akaun Maya BSI", "va-nagari": "Akaun Maya Bank Nagari", qris: "QRIS (semua e-dompet & perbankan mudah alih)", ewallet: "GoPay / OVO / DANA", cc: "Kad Kredit / Debit" },
+    errors: { invalid: "Maklumat tidak lengkap atau tidak sah. Sila semak semula.", unavailable: "Terdapat produk dalam troli yang tidak lagi tersedia. Buang dan cuba lagi.", address: "Alamat penghantaran wajib diisi." },
   },
   order: {
     loading: "Memuatkan pesanan...", notFound: (c) => `Pesanan ${c} tidak dijumpai`, paidTitle: "Pembayaran berjaya!", payTitle: "Selesaikan pembayaran",

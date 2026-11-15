@@ -1,7 +1,7 @@
-import { categories, cities } from "@/data/products";
+import { categories } from "@/data/catalog";
 import { getDict, type Locale } from "@/i18n/dictionaries";
 
-export default function SearchBox({ locale }: { locale: Locale }) {
+export default function SearchBox({ locale, cities }: { locale: Locale; cities: string[] }) {
   const t = getDict(locale);
   const field = "rounded-xl bg-neutral-100 px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-brand";
   return (

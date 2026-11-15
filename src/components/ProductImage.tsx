@@ -4,12 +4,24 @@ export default function ProductImage({
   emoji,
   className = "",
   size = "text-5xl",
+  src,
+  alt = "",
 }: {
   colors: [string, string];
   emoji: string;
   className?: string;
   size?: string;
+  /** Foto asli dari mitra; jika ada, menggantikan placeholder */
+  src?: string | null;
+  alt?: string;
 }) {
+  if (src)
+    return (
+      <div className={`relative overflow-hidden bg-neutral-200 ${className}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={src} alt={alt} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+      </div>
+    );
   return (
     <div
       className={`relative flex items-center justify-center overflow-hidden ${className}`}

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { categories } from "@/data/products";
+import { categories } from "@/data/catalog";
 import { useCart } from "@/context/CartContext";
 import { useI18n } from "@/i18n/client";
 import LanguageSwitcher from "./LanguageSwitcher";

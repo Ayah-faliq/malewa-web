@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { cities, getCategory, type Product } from "@/data/products";
+import { getCategory, type Product } from "@/data/catalog";
 import { searchableText } from "@/data/localize";
 import { getDict, type Locale } from "@/i18n/dictionaries";
 import ProductCard from "./ProductCard";
@@ -41,7 +41,7 @@ export default function Catalog({
 }) {
   const t = getDict(locale);
   const result = filterProducts(products, params);
-  const availableCities = cities.filter((c) => products.some((p) => p.city === c));
+  const availableCities = [...new Set(products.map((p) => p.city))].sort();
   const subs = categorySlug ? getCategory(categorySlug)?.subcategories : undefined;
   const isSearch = action === "/cari";
   const field = "w-full rounded-lg bg-neutral-100 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand";

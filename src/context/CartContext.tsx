@@ -1,31 +1,22 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { getProduct, type Product } from "@/data/products";
+import type { Product } from "@/data/catalog";
 
+/**
+ * Item keranjang menyimpan salinan produk untuk ditampilkan.
+ * Harga final selalu dihitung ulang dari database saat checkout (lihat src/app/checkout/actions.ts).
+ */
 export type CartItem = {
   id: string;
-  productSlug: string;
+  product: Product;
   qty: number;
   /** Jumlah malam/hari, 1 untuk produk tanpa durasi */
   duration: number;
   date?: string;
 };
 
-export type CartLine = CartItem & { product: Product; subtotal: number };
-
-export type Order = {
-  code: string;
-  createdAt: string;
-  customer: { name: string; email: string; phone: string; address?: string; note?: string };
-  payment: string;
-  lines: CartLine[];
-  subtotal: number;
-  discount: number;
-  shipping: number;
-  serviceFee: number;
-  total: number;
-};
+export type CartLine = CartItem & { subtotal: number };
 
 type CartCtx = {
   items: CartItem[];
@@ -40,10 +31,10 @@ type CartCtx = {
 };
 
 const Ctx = createContext<CartCtx | null>(null);
-const KEY = "malewa_cart_v1";
+const KEY = "malewa_cart_v2";
 
-export function lineSubtotal(item: CartItem, product: Product) {
-  return product.price * item.qty * Math.max(1, item.duration);
+export function lineSubtotal(item: Pick<CartItem, "qty" | "duration">, price: number) {
+  return price * item.qty * Math.max(1, item.duration);
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
@@ -68,9 +59,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const add = useCallback((item: Omit<CartItem, "id">) => {
     setItems((prev) => {
       const same = prev.find(
-        (i) => i.productSlug === item.productSlug && i.date === item.date && i.duration === item.duration,
+        (i) => i.product.id === item.product.id && i.date === item.date && i.duration === item.duration,
       );
-      if (same) return prev.map((i) => (i === same ? { ...i, qty: i.qty + item.qty } : i));
+      if (same) return prev.map((i) => (i === same ? { ...i, product: item.product, qty: i.qty + item.qty } : i));
       return [...prev, { ...item, id: Math.random().toString(36).slice(2, 10) }];
     });
   }, []);
@@ -83,10 +74,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const clear = useCallback(() => setItems([]), []);
 
   const value = useMemo(() => {
-    const lines: CartLine[] = items.flatMap((i) => {
-      const product = getProduct(i.productSlug);
-      return product ? [{ ...i, product, subtotal: lineSubtotal(i, product) }] : [];
-    });
+    const lines: CartLine[] = items.map((i) => ({ ...i, subtotal: lineSubtotal(i, i.product.price) }));
     return {
       items,
       lines,
@@ -107,22 +95,4 @@ export function useCart() {
   const c = useContext(Ctx);
   if (!c) throw new Error("useCart harus dipakai di dalam CartProvider");
   return c;
-}
-
-const ORDERS_KEY = "malewa_orders_v1";
-
-export function saveOrder(order: Order) {
-  try {
-    const all = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]") as Order[];
-    localStorage.setItem(ORDERS_KEY, JSON.stringify([order, ...all].slice(0, 20)));
-  } catch {}
-}
-
-export function loadOrder(code: string): Order | undefined {
-  try {
-    const all = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]") as Order[];
-    return all.find((o) => o.code === code);
-  } catch {
-    return undefined;
-  }
 }
