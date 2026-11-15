@@ -1,0 +1,139 @@
+// Skema database Malewa Holiday (PostgreSQL).
+// Lokal: lihat .env.example. Produksi: Supabase.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Koneksi lewat pooler (dipakai aplikasi)
+  url       = env("DATABASE_URL")
+  // Koneksi langsung (dipakai migrasi). Di Supabase: Connect → ORMs → Prisma
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN
+  PARTNER
+}
+
+enum PartnerStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  CANCELLED
+}
+
+/// Akun yang bisa login ke panel: admin Malewa atau pengguna dari mitra.
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role
+  partnerId    String?
+  partner      Partner? @relation(fields: [partnerId], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+/// Mitra yang bekerja sama: pengelola wisata, hotel, rental, UMKM oleh-oleh.
+model Partner {
+  id        String        @id @default(cuid())
+  name      String
+  city      String
+  province  String        @default("Sumatera Barat")
+  phone     String?
+  category  String        // rekreasi | akomodasi | transportasi | pasa
+  status    PartnerStatus @default(PENDING)
+  users     User[]
+  products  Product[]
+  createdAt DateTime      @default(now())
+}
+
+model Product {
+  id            String        @id @default(cuid())
+  slug          String        @unique
+  partnerId     String
+  partner       Partner       @relation(fields: [partnerId], references: [id])
+  category      String        // rekreasi | akomodasi | transportasi | pasa
+  sub           String?       // kuliner | kerajinan | perlengkapan (khusus pasa)
+  status        ProductStatus @default(DRAFT)
+  city          String
+  province      String        @default("Sumatera Barat")
+  price         Int
+  originalPrice Int?
+  unit          String        // person | roomNight | unitDay | pack | box | piece | sheet
+  stock         Int?          // null = tidak dibatasi (kuota tiket/kamar per hari menyusul)
+  rating        Float         @default(0)
+  reviews       Int           @default(0)
+  imageUrl      String?
+  emoji         String        @default("📍")
+  colorFrom     String        @default("#111111")
+  colorTo       String        @default("#fbb900")
+
+  // Teks per bahasa. Bahasa Indonesia wajib, English & Melayu opsional (jatuh ke Indonesia).
+  name          String
+  description   String
+  highlights    String[]
+  nameEn        String?
+  descriptionEn String?
+  highlightsEn  String[]
+  nameMs        String?
+  descriptionMs String?
+  highlightsMs  String[]
+
+  orderItems OrderItem[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@index([category, status])
+  @@index([partnerId])
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  code          String      @unique
+  status        OrderStatus @default(PENDING_PAYMENT)
+  customerName  String
+  customerEmail String
+  customerPhone String
+  address       String?
+  note          String?
+  locale        String      @default("id")
+  payment       String
+  subtotal      Int
+  discount      Int
+  shipping      Int
+  serviceFee    Int
+  total         Int
+  items         OrderItem[]
+  createdAt     DateTime    @default(now())
+  paidAt        DateTime?
+}
+
+model OrderItem {
+  id          String  @id @default(cuid())
+  orderId     String
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product @relation(fields: [productId], references: [id])
+  /// Snapshot saat pesan, supaya riwayat tidak berubah kalau produk diedit.
+  productName String
+  price       Int
+  qty         Int
+  duration    Int     @default(1)
+  date        String?
+  subtotal    Int
+  voucherCode String?
+}

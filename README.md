@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Malewa Holiday (malewa-web)
 
-## Getting Started
+Prototipe marketplace wisata ala Traveloka untuk Sumatera Barat dan sekitarnya. Menjual 4 kategori:
 
-First, run the development server:
+1. **Rekreasi** – tiket masuk destinasi wisata
+2. **Akomodasi** – resort, hotel, penginapan
+3. **Transportasi** – bus pariwisata, sewa mobil, shuttle, kapal
+4. **Pasa Malewa** – oleh-oleh (kuliner khas, kerajinan & merchandise) dan perlengkapan trip (handuk saset, tas traveling, dll.)
+
+## Fitur prototipe
+
+- Beranda dengan pencarian, 4 kategori, promo, produk populer, dan daerah populer
+- Katalog per kategori + pencarian dengan filter daerah & urutan harga/rating
+- Halaman detail produk dengan form pemesanan (tanggal, jumlah, lama malam/hari)
+- Keranjang (tersimpan di browser) dan checkout dengan kode promo `MALEWA10`; pesanan tersimpan di database
+- Pembayaran **simulasi** (VA, QRIS, e-wallet, kartu) dan halaman e-voucher pesanan
+- Multi bahasa: Indonesia, English, Bahasa Melayu (pilih di header; otomatis mengikuti bahasa browser saat pertama kali buka). Harga tetap Rupiah
+- Responsif untuk HP
+
+Data awal di `prisma/seed/` masih **contoh**. Produk tanpa foto memakai placeholder bergradasi.
+
+## Panel mitra & admin
+
+- `/mitra/daftar` – usaha mendaftar jadi mitra (status **menunggu verifikasi**)
+- `/mitra/masuk` – login mitra & admin
+- `/mitra` – dashboard mitra: tambah/edit produk (3 bahasa, harga, harga coret, stok, foto), tayangkan/sembunyikan, lihat pesanan masuk + tombol WhatsApp pemesan
+- `/admin` – setujui/nonaktifkan mitra, kelola semua produk, lihat semua pesanan
+
+Produk hanya tampil di website jika statusnya **Tayang** dan mitranya **Aktif**. Harga saat checkout selalu dihitung ulang dari database.
+
+Akun dari seed (lokal): admin sesuai `SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD` di `.env`, dan demo mitra `mitra.rental@malewa.com` / `mitra.pasa@malewa.com` dengan password `demo12345`.
+
+## Menjalankan lokal
+
+Butuh Node.js 20+ dan PostgreSQL.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env        # isi DATABASE_URL, AUTH_SECRET, SEED_ADMIN_PASSWORD
+npm install
+npm run db:migrate          # buat tabel
+npm run db:seed:local       # isi data contoh + akun admin
+npm run dev                 # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Online di Vercel + Supabase
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Supabase:** buat project di supabase.com (region Singapore). Klik tombol **Connect** → tab **ORMs** → **Prisma**, salin nilai `DATABASE_URL` dan `DIRECT_URL` (ganti `[YOUR-PASSWORD]` dengan password database).
+2. **Foto produk:** di Supabase **Project Settings → API**, salin **Project URL** dan kunci **service_role**. Bucket `produk` dibuat otomatis saat foto pertama diunggah.
+3. **Vercel:** Add New → Project → import repo `malewa-web`. Di **Settings → Environment Variables**, isi:
+   - `DATABASE_URL`, `DIRECT_URL` (dari langkah 1)
+   - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (dari langkah 2)
+   - `AUTH_SECRET`: string acak ≥ 32 karakter
+   - `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`: akun admin pertama
+4. Deploy. Script `vercel-build` otomatis menjalankan migrasi database, membuat akun admin, dan mengisi data contoh **hanya jika database masih kosong** (data mitra tidak pernah tertimpa).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Struktur
 
-## Learn More
+| Path | Isi |
+| --- | --- |
+| `src/app/page.tsx` | Beranda |
+| `src/app/kategori/[slug]` | Katalog per kategori |
+| `src/app/cari` | Hasil pencarian |
+| `src/app/produk/[slug]` | Detail produk + pemesanan |
+| `src/app/keranjang`, `src/app/checkout` | Keranjang & checkout |
+| `src/app/pesanan/[kode]` | Status pembayaran & e-voucher |
+| `src/data/catalog.ts` | Kategori, tipe produk |
+| `src/data/repo.ts` | Query produk dari database |
+| `prisma/schema.prisma` | Skema database |
+| `prisma/seed/` | Data contoh & terjemahannya |
+| `src/app/(panel)/` | Panel mitra & admin |
+| `src/i18n/dictionaries.ts` | Semua teks tampilan per bahasa |
+| `src/context/CartContext.tsx` | Keranjang (localStorage) |
 
-To learn more about Next.js, take a look at the following resources:
+## Langkah berikutnya
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Kuota tiket/kamar per tanggal (saat ini stok masih total)
+- Akun pengguna (login) dan riwayat pesanan
+- Integrasi payment gateway (Midtrans/Xendit) dan ongkir (RajaOngkir)
+- Notifikasi e-voucher via email/WhatsApp
