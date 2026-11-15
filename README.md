@@ -42,16 +42,16 @@ npm run db:seed:local       # isi data contoh + akun admin
 npm run dev                 # http://localhost:3000
 ```
 
-## Online di Vercel
+## Online di Vercel + Supabase
 
-1. Login ke vercel.com dengan akun GitHub, lalu **Add New → Project** dan pilih repo `malewa-web`.
-2. Di tab **Storage**, tambahkan database Postgres (misalnya Neon) dan sambungkan ke project. `DATABASE_URL` terisi otomatis.
-3. (Opsional, untuk upload foto) tambahkan **Blob** store. `BLOB_READ_WRITE_TOKEN` terisi otomatis.
-4. Di **Settings → Environment Variables**, tambahkan:
+1. **Supabase:** buat project di supabase.com (region Singapore). Klik tombol **Connect** → tab **ORMs** → **Prisma**, salin nilai `DATABASE_URL` dan `DIRECT_URL` (ganti `[YOUR-PASSWORD]` dengan password database).
+2. **Foto produk:** di Supabase **Project Settings → API**, salin **Project URL** dan kunci **service_role**. Bucket `produk` dibuat otomatis saat foto pertama diunggah.
+3. **Vercel:** Add New → Project → import repo `malewa-web`. Di **Settings → Environment Variables**, isi:
+   - `DATABASE_URL`, `DIRECT_URL` (dari langkah 1)
+   - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (dari langkah 2)
    - `AUTH_SECRET`: string acak ≥ 32 karakter
-   - `SEED_ADMIN_EMAIL`: email login admin
-   - `SEED_ADMIN_PASSWORD`: password admin yang kuat
-5. Deploy. Script `vercel-build` otomatis menjalankan migrasi database, membuat akun admin, dan mengisi data contoh **hanya jika database masih kosong** (data mitra tidak pernah tertimpa).
+   - `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`: akun admin pertama
+4. Deploy. Script `vercel-build` otomatis menjalankan migrasi database, membuat akun admin, dan mengisi data contoh **hanya jika database masih kosong** (data mitra tidak pernah tertimpa).
 
 ## Struktur
 
