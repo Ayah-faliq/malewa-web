@@ -5,31 +5,36 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { categories } from "@/data/products";
 import { useCart } from "@/context/CartContext";
+import { useI18n } from "@/i18n/client";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function Header() {
   const { count, ready } = useCart();
+  const { t } = useI18n();
   const path = usePathname();
 
   return (
     <header className="sticky top-0 z-40 bg-ink text-white shadow-md">
-      <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
-        <Link href="/" className="shrink-0" aria-label="Malewa Holiday - Beranda">
+      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+        <Link href="/" className="shrink-0" aria-label={`Malewa Holiday - ${t.nav.home}`}>
           <Image src="/logo.png" alt="Malewa Holiday" width={140} height={56} priority className="h-10 w-auto" />
         </Link>
         <form action="/cari" className="hidden flex-1 md:block">
           <input
             name="q"
-            placeholder="Cari destinasi, penginapan, bus, atau oleh-oleh..."
+            placeholder={t.nav.searchPlaceholder}
             className="w-full rounded-full bg-white/10 px-4 py-2 text-sm placeholder:text-white/50 outline-none ring-brand focus:ring-2"
           />
         </form>
         <div className="ml-auto flex items-center gap-2">
+          <LanguageSwitcher />
           <Link
             href="/keranjang"
             className="relative flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-bold text-ink hover:bg-brand-dark"
+            aria-label={t.nav.cart}
           >
             <span aria-hidden>🛒</span>
-            <span className="hidden sm:inline">Keranjang</span>
+            <span className="hidden sm:inline">{t.nav.cart}</span>
             {ready && count > 0 && (
               <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-xs text-white">
                 {count}
@@ -50,7 +55,7 @@ export default function Header() {
                   active ? "border-brand text-brand" : "border-transparent text-white/80 hover:text-white"
                 }`}
               >
-                {c.emoji} {c.name}
+                {c.emoji} {t.categories[c.slug].name}
               </Link>
             );
           })}

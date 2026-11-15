@@ -5,7 +5,7 @@ Prototipe marketplace wisata ala Traveloka untuk Sumatera Barat dan sekitarnya. 
 1. **Rekreasi** – tiket masuk destinasi wisata
 2. **Akomodasi** – resort, hotel, penginapan
 3. **Transportasi** – bus pariwisata, sewa mobil, shuttle, kapal
-4. **Oleh-oleh** – kuliner & merchandise khas
+4. **Pasa Malewa** – oleh-oleh (kuliner khas, kerajinan & merchandise) dan perlengkapan trip (handuk saset, tas traveling, dll.)
 
 ## Fitur prototipe
 
@@ -14,7 +14,8 @@ Prototipe marketplace wisata ala Traveloka untuk Sumatera Barat dan sekitarnya. 
 - Halaman detail produk dengan form pemesanan (tanggal, jumlah, lama malam/hari)
 - Keranjang (tersimpan di browser) dan checkout dengan kode promo `MALEWA10`
 - Pembayaran **simulasi** (VA, QRIS, e-wallet, kartu) dan halaman e-voucher pesanan
-- Bahasa Indonesia, harga Rupiah, responsif untuk HP
+- Multi bahasa: Indonesia, English, Bahasa Melayu (pilih di header; otomatis mengikuti bahasa browser saat pertama kali buka). Harga tetap Rupiah
+- Responsif untuk HP
 
 Data di `src/data/products.ts` masih **contoh**. Gambar produk masih placeholder bergradasi.
 
@@ -36,6 +37,8 @@ npm run dev   # http://localhost:3000
 | `src/app/keranjang`, `src/app/checkout` | Keranjang & checkout |
 | `src/app/pesanan/[kode]` | Status pembayaran & e-voucher |
 | `src/data/products.ts` | Data kategori & produk contoh |
+| `src/i18n/dictionaries.ts` | Semua teks tampilan per bahasa |
+| `src/data/products.i18n.ts` | Terjemahan nama & deskripsi produk (EN, MS) |
 | `src/context/CartContext.tsx` | State keranjang & pesanan (localStorage) |
 
 ## Langkah berikutnya

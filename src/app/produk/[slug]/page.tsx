@@ -2,30 +2,38 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getCategory, getProduct, products } from "@/data/products";
+import { localizeProduct } from "@/data/localize";
 import ProductImage from "@/components/ProductImage";
 import ProductCard from "@/components/ProductCard";
 import BookingForm from "@/components/BookingForm";
-
-export function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }));
-}
+import { getI18n } from "@/i18n/server";
+import { count } from "@/lib/format";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const p = getProduct((await params).slug);
-  return { title: p ? `${p.name} - Malewa Holiday` : "Malewa Holiday", description: p?.description };
+  const { locale } = await getI18n();
+  const raw = getProduct((await params).slug);
+  if (!raw) return { title: "Malewa Holiday" };
+  const p = localizeProduct(raw, locale);
+  return { title: `${p.name} - Malewa Holiday`, description: p.description };
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
-  const p = getProduct((await params).slug);
-  if (!p) notFound();
+  const raw = getProduct((await params).slug);
+  if (!raw) notFound();
+  const { locale, t } = await getI18n();
+  const p = localizeProduct(raw, locale);
   const cat = getCategory(p.category)!;
-  const related = products.filter((x) => x.category === p.category && x.slug !== p.slug).slice(0, 4);
+  const catText = t.categories[cat.slug];
+  const related = products
+    .filter((x) => x.category === p.category && x.slug !== p.slug)
+    .sort((a, b) => Number(b.sub === p.sub) - Number(a.sub === p.sub))
+    .slice(0, 4);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <nav className="mb-4 text-sm text-neutral-500">
-        <Link href="/" className="hover:text-accent">Beranda</Link> /{" "}
-        <Link href={`/kategori/${cat.slug}`} className="hover:text-accent">{cat.name}</Link> /{" "}
+        <Link href="/" className="hover:text-accent">{t.nav.home}</Link> /{" "}
+        <Link href={`/kategori/${cat.slug}`} className="hover:text-accent">{catText.name}</Link> /{" "}
         <span className="text-ink">{p.name}</span>
       </nav>
 
@@ -38,19 +46,24 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </div>
 
           <div className="mt-5">
-            <span className="rounded-full bg-brand/20 px-3 py-1 text-xs font-bold">{cat.emoji} {cat.name}</span>
+            <span className="rounded-full bg-brand/20 px-3 py-1 text-xs font-bold">
+              {cat.emoji} {catText.name}
+              {p.sub && ` · ${t.subcategories[p.sub]}`}
+            </span>
             <h1 className="mt-2 text-2xl font-extrabold md:text-3xl">{p.name}</h1>
             <p className="mt-1 text-sm text-neutral-600">
               📍 {p.city}, {p.province} · <span className="font-semibold text-amber-600">★ {p.rating.toFixed(1)}</span>{" "}
-              ({p.reviews.toLocaleString("id-ID")} ulasan)
+              ({count(p.reviews, locale)} {t.card.reviews})
             </p>
-            <p className="mt-1 text-sm text-neutral-500">Mitra: <b className="text-ink">{p.partner}</b> ✅ Terverifikasi</p>
+            <p className="mt-1 text-sm text-neutral-500">
+              {t.product.partner}: <b className="text-ink">{p.partner}</b> ✅ {t.product.verified}
+            </p>
           </div>
 
           <section className="mt-6 rounded-2xl bg-white p-5 ring-1 ring-black/5">
-            <h2 className="mb-2 text-lg font-bold">Tentang</h2>
+            <h2 className="mb-2 text-lg font-bold">{t.product.about}</h2>
             <p className="leading-relaxed text-neutral-700">{p.description}</p>
-            <h3 className="mb-2 mt-5 font-bold">Yang Anda dapatkan</h3>
+            <h3 className="mb-2 mt-5 font-bold">{t.product.whatYouGet}</h3>
             <ul className="grid gap-2 sm:grid-cols-2">
               {p.highlights.map((h) => (
                 <li key={h} className="flex items-start gap-2 text-sm"><span className="text-green-600">✔</span>{h}</li>
@@ -59,20 +72,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </section>
 
           <section className="mt-4 rounded-2xl bg-white p-5 ring-1 ring-black/5">
-            <h2 className="mb-2 text-lg font-bold">Kebijakan</h2>
+            <h2 className="mb-2 text-lg font-bold">{t.product.policy}</h2>
             <ul className="list-disc space-y-1 pl-5 text-sm text-neutral-700">
-              {cat.slug === "oleh-oleh" ? (
-                <>
-                  <li>Dikirim 1x24 jam setelah pembayaran dikonfirmasi.</li>
-                  <li>Retur jika barang rusak saat diterima (sertakan video unboxing).</li>
-                </>
-              ) : (
-                <>
-                  <li>E-voucher dikirim ke email & WhatsApp setelah pembayaran.</li>
-                  <li>Refund penuh jika dibatalkan paling lambat H-3.</li>
-                  <li>Reschedule gratis 1x, tergantung ketersediaan mitra.</li>
-                </>
-              )}
+              {(cat.needsShipping ? t.product.policyShop : t.product.policyBooking).map((x) => (
+                <li key={x}>{x}</li>
+              ))}
             </ul>
           </section>
         </div>
@@ -84,9 +88,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
       {related.length > 0 && (
         <section className="mt-12">
-          <h2 className="mb-4 text-xl font-extrabold">{cat.name} lainnya</h2>
+          <h2 className="mb-4 text-xl font-extrabold">{t.product.others(catText.name)}</h2>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {related.map((r) => <ProductCard key={r.slug} p={r} />)}
+            {related.map((r) => <ProductCard key={r.slug} p={r} locale={locale} />)}
           </div>
         </section>
       )}

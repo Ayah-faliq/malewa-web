@@ -1,11 +1,14 @@
 import Link from "next/link";
 import type { Product } from "@/data/products";
-import { getCategory } from "@/data/products";
-import { rupiah } from "@/lib/format";
+import { localizeProduct, unitText } from "@/data/localize";
+import { getDict, type Locale } from "@/i18n/dictionaries";
+import { count, rupiah } from "@/lib/format";
 import ProductImage from "./ProductImage";
 
-export default function ProductCard({ p }: { p: Product }) {
-  const cat = getCategory(p.category);
+export default function ProductCard({ p: raw, locale }: { p: Product; locale: Locale }) {
+  const t = getDict(locale);
+  const p = localizeProduct(raw, locale);
+  const label = p.sub ? t.subcategories[p.sub] : t.categories[p.category].name;
   const discount = p.originalPrice ? Math.round((1 - p.price / p.originalPrice) * 100) : 0;
   return (
     <Link
@@ -14,12 +17,10 @@ export default function ProductCard({ p }: { p: Product }) {
     >
       <div className="relative">
         <ProductImage colors={p.colors} emoji={p.emoji} className="aspect-[4/3]" />
-        <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-semibold text-white">
-          {cat?.name}
-        </span>
+        <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-semibold text-white">{label}</span>
         {discount > 0 && (
           <span className="absolute right-2 top-2 rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-white">
-            Hemat {discount}%
+            {t.card.save(discount)}
           </span>
         )}
       </div>
@@ -31,13 +32,15 @@ export default function ProductCard({ p }: { p: Product }) {
         </p>
         <p className="mt-1 text-xs">
           <span className="font-semibold text-amber-600">★ {p.rating.toFixed(1)}</span>{" "}
-          <span className="text-neutral-400">({p.reviews.toLocaleString("id-ID")} ulasan)</span>
+          <span className="text-neutral-400">
+            ({count(p.reviews, locale)} {t.card.reviews})
+          </span>
         </p>
         <div className="mt-auto pt-2">
           {p.originalPrice && <p className="text-xs text-neutral-400 line-through">{rupiah(p.originalPrice)}</p>}
           <p className="font-extrabold text-accent">
             {rupiah(p.price)}
-            <span className="text-xs font-normal text-neutral-500"> {p.unit}</span>
+            <span className="text-xs font-normal text-neutral-500"> {unitText(p, locale)}</span>
           </p>
         </div>
       </div>

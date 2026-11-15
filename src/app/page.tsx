@@ -1,10 +1,13 @@
 import Link from "next/link";
-import { categories, products, productsByCategory, popularCities } from "@/data/products";
+import { categories, products, featuredByCategory, popularCities } from "@/data/products";
 import ProductCard from "@/components/ProductCard";
 import ProductImage from "@/components/ProductImage";
 import SearchBox from "@/components/SearchBox";
+import { getI18n } from "@/i18n/server";
+import { localizeProduct } from "@/data/localize";
 
-export default function Home() {
+export default async function Home() {
+  const { locale, t } = await getI18n();
   const promos = products.filter((p) => p.originalPrice);
   return (
     <>
@@ -19,19 +22,18 @@ export default function Home() {
         />
         <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-10 md:pb-24 md:pt-16">
           <p className="mb-2 inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-brand">
-            Jelajahi Ranah Minang & Sumatera
+            {t.hero.badge}
           </p>
           <h1 className="font-display text-[1.75rem] leading-tight md:text-5xl">
-            Liburan ke Sumatera Barat,
+            {t.hero.title1}
             <br />
-            <span className="text-brand">semua dalam satu genggaman.</span>
+            <span className="text-brand">{t.hero.title2}</span>
           </h1>
           <p className="mt-3 max-w-xl text-white/80">
-            Tiket wisata, resort & penginapan, bus pariwisata, sewa mobil, sampai oleh-oleh khas. Langsung dari
-            mitra lokal terpercaya.
+            {t.hero.subtitle}
           </p>
           <div className="mt-6">
-            <SearchBox />
+            <SearchBox locale={locale} />
           </div>
         </div>
       </section>
@@ -49,8 +51,8 @@ export default function Home() {
                 {c.emoji}
               </span>
               <span>
-                <span className="block font-extrabold">{c.name}</span>
-                <span className="block text-xs text-neutral-500">{c.tagline}</span>
+                <span className="block font-extrabold">{t.categories[c.slug].name}</span>
+                <span className="block text-xs text-neutral-500">{t.categories[c.slug].tagline}</span>
               </span>
             </Link>
           ))}
@@ -61,15 +63,15 @@ export default function Home() {
       <section className="mx-auto mt-10 max-w-6xl px-4">
         <div className="flex flex-col gap-4 rounded-2xl bg-gradient-to-r from-accent to-brand p-6 text-ink md:flex-row md:items-center">
           <div className="flex-1">
-            <p className="text-xs font-bold uppercase tracking-wider">Promo pembukaan</p>
-            <h2 className="font-display text-2xl">Hemat hingga 17% untuk mitra pilihan</h2>
-            <p className="text-sm">Pakai kode <b>MALEWA10</b> di checkout untuk diskon tambahan 10%.</p>
+            <p className="text-xs font-bold uppercase tracking-wider">{t.promo.label}</p>
+            <h2 className="font-display text-2xl">{t.promo.title}</h2>
+            <p className="text-sm">{t.promo.body("MALEWA10")}</p>
           </div>
           <div className="no-scrollbar flex gap-3 overflow-x-auto">
             {promos.map((p) => (
               <Link key={p.slug} href={`/produk/${p.slug}`} className="w-40 shrink-0 rounded-xl bg-white/90 p-2 text-xs font-semibold hover:bg-white">
                 <ProductImage colors={p.colors} emoji={p.emoji} className="mb-1 h-16 rounded-lg" size="text-2xl" />
-                <span className="line-clamp-1">{p.name}</span>
+                <span className="line-clamp-1">{localizeProduct(p, locale).name}</span>
               </Link>
             ))}
           </div>
@@ -82,19 +84,18 @@ export default function Home() {
           <div className="mb-4 flex items-end justify-between">
             <div>
               <h2 className="text-xl font-extrabold md:text-2xl">
-                {c.emoji} {c.name} populer
+                {c.emoji} {t.home.popular(t.categories[c.slug].name)}
               </h2>
-              <p className="text-sm text-neutral-500">{c.tagline}</p>
+              <p className="text-sm text-neutral-500">{t.categories[c.slug].tagline}</p>
             </div>
             <Link href={`/kategori/${c.slug}`} className="text-sm font-bold text-accent hover:underline">
-              Lihat semua →
+              {t.home.seeAll}
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {productsByCategory(c.slug)
-              .slice(0, 4)
+            {featuredByCategory(c.slug)
               .map((p) => (
-                <ProductCard key={p.slug} p={p} />
+                <ProductCard key={p.slug} p={p} locale={locale} />
               ))}
           </div>
         </section>
@@ -102,7 +103,7 @@ export default function Home() {
 
       {/* DESTINASI */}
       <section className="mx-auto mt-12 max-w-6xl px-4">
-        <h2 className="mb-4 text-xl font-extrabold md:text-2xl">Jelajahi berdasarkan daerah</h2>
+        <h2 className="mb-4 text-xl font-extrabold md:text-2xl">{t.home.regions}</h2>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
           {popularCities.map((c) => (
             <Link key={c.name} href={`/cari?kota=${encodeURIComponent(c.name)}`} className="group">
@@ -118,11 +119,7 @@ export default function Home() {
       {/* KENAPA MALEWA */}
       <section className="mx-auto mt-12 max-w-6xl px-4">
         <div className="grid gap-4 rounded-2xl bg-white p-6 ring-1 ring-black/5 md:grid-cols-3">
-          {[
-            ["🤝", "Mitra lokal terverifikasi", "Bekerja sama langsung dengan pengelola wisata, hotel, dan UMKM."],
-            ["💳", "Bayar mudah", "Transfer bank, QRIS, e-wallet, dan kartu kredit."],
-            ["📲", "E-voucher instan", "Tiket dan voucher langsung terkirim setelah pembayaran."],
-          ].map(([icon, title, desc]) => (
+          {t.home.why.map(([icon, title, desc]) => (
             <div key={title} className="flex gap-3">
               <span className="text-3xl">{icon}</span>
               <div>

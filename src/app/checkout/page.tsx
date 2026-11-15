@@ -6,14 +6,16 @@ import { useRouter } from "next/navigation";
 import { saveOrder, useCart, type Order } from "@/context/CartContext";
 import { getCategory } from "@/data/products";
 import { rupiah, tanggal } from "@/lib/format";
+import { localizeProduct } from "@/data/localize";
+import { useI18n } from "@/i18n/client";
 
 const PAYMENTS = [
-  { id: "va-bni", label: "Virtual Account BNI", icon: "🏦" },
-  { id: "va-bsi", label: "Virtual Account BSI", icon: "🏦" },
-  { id: "va-nagari", label: "Virtual Account Bank Nagari", icon: "🏦" },
-  { id: "qris", label: "QRIS (semua e-wallet & m-banking)", icon: "📱" },
-  { id: "ewallet", label: "GoPay / OVO / DANA", icon: "👛" },
-  { id: "cc", label: "Kartu Kredit / Debit", icon: "💳" },
+  { id: "va-bni", icon: "🏦" },
+  { id: "va-bsi", icon: "🏦" },
+  { id: "va-nagari", icon: "🏦" },
+  { id: "qris", icon: "📱" },
+  { id: "ewallet", icon: "👛" },
+  { id: "cc", icon: "💳" },
 ];
 
 const SHIPPING = 25000;
@@ -23,6 +25,7 @@ const PROMO_CODE = "MALEWA10";
 export default function CheckoutPage() {
   const { lines, subtotal, clear, ready } = useCart();
   const router = useRouter();
+  const { locale, t } = useI18n();
   const [payment, setPayment] = useState(PAYMENTS[0].id);
   const [promo, setPromo] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
@@ -34,12 +37,12 @@ export default function CheckoutPage() {
   const discount = promoApplied ? Math.round(subtotal * 0.1) : 0;
   const total = subtotal - discount + shipping + SERVICE_FEE;
 
-  if (!ready) return <div className="mx-auto max-w-6xl px-4 py-10 text-neutral-500">Memuat...</div>;
+  if (!ready) return <div className="mx-auto max-w-6xl px-4 py-10 text-neutral-500">{t.checkout.loading}</div>;
   if (lines.length === 0 && !submitting)
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
-        <h1 className="text-2xl font-extrabold">Tidak ada yang perlu dibayar</h1>
-        <Link href="/" className="mt-6 inline-block rounded-xl bg-accent px-6 py-3 font-bold text-white">Kembali ke beranda</Link>
+        <h1 className="text-2xl font-extrabold">{t.checkout.nothing}</h1>
+        <Link href="/" className="mt-6 inline-block rounded-xl bg-accent px-6 py-3 font-bold text-white">{t.checkout.backHome}</Link>
       </div>
     );
 
@@ -49,7 +52,7 @@ export default function CheckoutPage() {
       setPromoError("");
     } else {
       setPromoApplied(false);
-      setPromoError("Kode promo tidak valid");
+      setPromoError(t.checkout.promoInvalid);
     }
   }
 
@@ -68,7 +71,7 @@ export default function CheckoutPage() {
         address: needsShipping ? String(f.get("address")) : undefined,
         note: String(f.get("note") || ""),
       },
-      payment: PAYMENTS.find((p) => p.id === payment)!.label,
+      payment,
       lines,
       subtotal,
       shipping,
@@ -88,39 +91,39 @@ export default function CheckoutPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-extrabold">Checkout</h1>
+      <h1 className="mb-6 text-2xl font-extrabold">{t.checkout.title}</h1>
       <form onSubmit={onSubmit} className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="space-y-4">
           <section className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
-            <h2 className="mb-3 font-bold">1. Data pemesan</h2>
+            <h2 className="mb-3 font-bold">{t.checkout.step1}</h2>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="sm:col-span-2">
-                <span className="mb-1 block text-xs font-bold text-neutral-500">Nama lengkap (sesuai KTP)</span>
-                <input name="name" required className={input} placeholder="Contoh: Andre Syahputra" />
+                <span className="mb-1 block text-xs font-bold text-neutral-500">{t.checkout.fullName}</span>
+                <input name="name" required className={input} placeholder={t.checkout.fullNamePh} />
               </label>
               <label>
-                <span className="mb-1 block text-xs font-bold text-neutral-500">Email</span>
+                <span className="mb-1 block text-xs font-bold text-neutral-500">{t.checkout.email}</span>
                 <input name="email" type="email" required className={input} placeholder="nama@email.com" />
               </label>
               <label>
-                <span className="mb-1 block text-xs font-bold text-neutral-500">No. WhatsApp</span>
+                <span className="mb-1 block text-xs font-bold text-neutral-500">{t.checkout.phone}</span>
                 <input name="phone" type="tel" required pattern="[0-9+ ]{9,16}" className={input} placeholder="08xxxxxxxxxx" />
               </label>
               {needsShipping && (
                 <label className="sm:col-span-2">
-                  <span className="mb-1 block text-xs font-bold text-neutral-500">Alamat pengiriman oleh-oleh</span>
-                  <textarea name="address" required rows={3} className={input} placeholder="Jalan, kelurahan, kecamatan, kota, kode pos" />
+                  <span className="mb-1 block text-xs font-bold text-neutral-500">{t.checkout.address}</span>
+                  <textarea name="address" required rows={3} className={input} placeholder={t.checkout.addressPh} />
                 </label>
               )}
               <label className="sm:col-span-2">
-                <span className="mb-1 block text-xs font-bold text-neutral-500">Catatan untuk mitra (opsional)</span>
-                <input name="note" className={input} placeholder="Contoh: jemput di Hotel X jam 08.00" />
+                <span className="mb-1 block text-xs font-bold text-neutral-500">{t.checkout.note}</span>
+                <input name="note" className={input} placeholder={t.checkout.notePh} />
               </label>
             </div>
           </section>
 
           <section className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
-            <h2 className="mb-3 font-bold">2. Metode pembayaran</h2>
+            <h2 className="mb-3 font-bold">{t.checkout.step2}</h2>
             <div className="grid gap-2 sm:grid-cols-2">
               {PAYMENTS.map((p) => (
                 <label
@@ -131,28 +134,29 @@ export default function CheckoutPage() {
                 >
                   <input type="radio" name="payment" value={p.id} checked={payment === p.id} onChange={() => setPayment(p.id)} className="accent-[#e8572a]" />
                   <span className="text-xl">{p.icon}</span>
-                  <span className="font-semibold">{p.label}</span>
+                  <span className="font-semibold">{t.checkout.payments[p.id]}</span>
                 </label>
               ))}
             </div>
             <p className="mt-3 text-xs text-neutral-500">
-              ⓘ Prototipe: pembayaran masih simulasi. Nanti dihubungkan ke payment gateway (mis. Midtrans / Xendit).
+              {t.checkout.payNote}
             </p>
           </section>
         </div>
 
         <aside className="h-fit rounded-2xl bg-white p-5 shadow-lg ring-1 ring-black/5 lg:sticky lg:top-32">
-          <h2 className="mb-3 font-bold">Pesanan Anda</h2>
+          <h2 className="mb-3 font-bold">{t.checkout.yourOrder}</h2>
           <ul className="space-y-3 border-b pb-3">
             {lines.map((l) => {
               const cat = getCategory(l.product.category)!;
+              const text = t.categories[cat.slug];
               return (
                 <li key={l.id} className="flex justify-between gap-3 text-sm">
                   <div className="min-w-0">
-                    <p className="line-clamp-1 font-semibold">{l.product.name}</p>
+                    <p className="line-clamp-1 font-semibold">{localizeProduct(l.product, locale).name}</p>
                     <p className="text-xs text-neutral-500">
-                      {l.qty}x{cat.durationLabel ? ` · ${l.duration} ${cat.durationLabel}` : ""}
-                      {l.date ? ` · ${tanggal(l.date)}` : ""}
+                      {l.qty}x{cat.hasDuration ? ` · ${l.duration} ${text.durationLabel}` : ""}
+                      {l.date ? ` · ${tanggal(l.date, locale)}` : ""}
                     </p>
                   </div>
                   <span className="shrink-0 font-semibold">{rupiah(l.subtotal)}</span>
@@ -165,28 +169,28 @@ export default function CheckoutPage() {
             <input
               value={promo}
               onChange={(e) => setPromo(e.target.value)}
-              placeholder="Kode promo"
+              placeholder={t.checkout.promoPh}
               className="min-w-0 flex-1 rounded-lg bg-neutral-100 px-3 py-2 text-sm uppercase outline-none focus:ring-2 focus:ring-brand"
             />
             <button type="button" onClick={applyPromo} className="rounded-lg bg-ink px-3 text-sm font-bold text-white">
-              Pakai
+              {t.checkout.apply}
             </button>
           </div>
           {promoError && <p className="mt-1 text-xs text-red-600">{promoError}</p>}
-          {promoApplied && <p className="mt-1 text-xs text-green-700">✔ Promo {PROMO_CODE} dipakai</p>}
+          {promoApplied && <p className="mt-1 text-xs text-green-700">{t.checkout.promoApplied(PROMO_CODE)}</p>}
 
           <dl className="mt-4 space-y-1 text-sm">
-            <Row label="Subtotal" value={rupiah(subtotal)} />
-            {discount > 0 && <Row label="Diskon promo" value={"−" + rupiah(discount)} className="text-green-700" />}
-            {needsShipping && <Row label="Ongkir oleh-oleh" value={rupiah(shipping)} />}
-            <Row label="Biaya layanan" value={rupiah(SERVICE_FEE)} />
+            <Row label={t.checkout.subtotal} value={rupiah(subtotal)} />
+            {discount > 0 && <Row label={t.checkout.discount} value={"−" + rupiah(discount)} className="text-green-700" />}
+            {needsShipping && <Row label={t.checkout.shipping} value={rupiah(shipping)} />}
+            <Row label={t.checkout.serviceFee} value={rupiah(SERVICE_FEE)} />
           </dl>
           <div className="mt-3 flex justify-between border-t pt-3">
-            <span className="font-bold">Total bayar</span>
+            <span className="font-bold">{t.checkout.total}</span>
             <span className="text-xl font-extrabold text-accent">{rupiah(total)}</span>
           </div>
           <button disabled={submitting} className="mt-4 w-full rounded-xl bg-accent py-3 font-bold text-white hover:brightness-110 disabled:opacity-60">
-            {submitting ? "Memproses..." : "Bayar sekarang"}
+            {submitting ? t.checkout.processing : t.checkout.pay}
           </button>
         </aside>
       </form>

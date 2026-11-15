@@ -1,56 +1,24 @@
 // Data contoh untuk prototipe. Nanti diganti dengan data mitra asli dari database/admin.
 
-export type CategorySlug = "rekreasi" | "akomodasi" | "transportasi" | "oleh-oleh";
+export type CategorySlug = "rekreasi" | "akomodasi" | "transportasi" | "pasa";
+export type SubCategory = "kuliner" | "kerajinan" | "perlengkapan";
+export type Unit = "person" | "roomNight" | "unitDay" | "pack" | "box" | "piece" | "sheet";
 
+/** Teks kategori (nama, label form) ada di src/i18n/dictionaries.ts */
 export type Category = {
   slug: CategorySlug;
-  name: string;
-  tagline: string;
   emoji: string;
-  /** Label kuantitas di form pemesanan */
-  qtyLabel: string;
-  /** Label durasi (malam/hari), kosong jika tidak ada durasi */
-  durationLabel?: string;
-  /** Label tanggal di form pemesanan, kosong jika tidak butuh tanggal */
-  dateLabel?: string;
+  hasDate: boolean;
+  hasDuration: boolean;
   needsShipping?: boolean;
+  subcategories?: SubCategory[];
 };
 
 export const categories: Category[] = [
-  {
-    slug: "rekreasi",
-    name: "Rekreasi",
-    tagline: "Tiket masuk destinasi wisata",
-    emoji: "🎟️",
-    qtyLabel: "Jumlah tiket",
-    dateLabel: "Tanggal kunjungan",
-  },
-  {
-    slug: "akomodasi",
-    name: "Akomodasi",
-    tagline: "Resort, hotel & penginapan",
-    emoji: "🏡",
-    qtyLabel: "Jumlah kamar",
-    durationLabel: "malam",
-    dateLabel: "Tanggal check-in",
-  },
-  {
-    slug: "transportasi",
-    name: "Transportasi",
-    tagline: "Bus pariwisata & sewa mobil",
-    emoji: "🚌",
-    qtyLabel: "Jumlah unit / kursi",
-    durationLabel: "hari",
-    dateLabel: "Tanggal berangkat",
-  },
-  {
-    slug: "oleh-oleh",
-    name: "Oleh-oleh",
-    tagline: "Merchandise & kuliner khas",
-    emoji: "🎁",
-    qtyLabel: "Jumlah",
-    needsShipping: true,
-  },
+  { slug: "rekreasi", emoji: "🎟️", hasDate: true, hasDuration: false },
+  { slug: "akomodasi", emoji: "🏡", hasDate: true, hasDuration: true },
+  { slug: "transportasi", emoji: "🚌", hasDate: true, hasDuration: true },
+  { slug: "pasa", emoji: "🛍️", hasDate: false, hasDuration: false, needsShipping: true, subcategories: ["kuliner", "kerajinan", "perlengkapan"] },
 ];
 
 export type Product = {
@@ -60,8 +28,9 @@ export type Product = {
   city: string;
   province: string;
   price: number;
-  /** Satuan harga, contoh: "/orang", "/kamar/malam" */
-  unit: string;
+  unit: Unit;
+  /** Sub-kategori, khusus Pasa Malewa */
+  sub?: SubCategory;
   rating: number;
   reviews: number;
   partner: string;
@@ -85,7 +54,7 @@ export const products: Product[] = [
     city: "Bukittinggi",
     province: SUMBAR,
     price: 15000,
-    unit: "/orang",
+    unit: "person",
     rating: 4.7,
     reviews: 1284,
     partner: "Pemko Bukittinggi",
@@ -102,7 +71,7 @@ export const products: Product[] = [
     city: "Bukittinggi",
     province: SUMBAR,
     price: 25000,
-    unit: "/orang",
+    unit: "person",
     rating: 4.8,
     reviews: 963,
     partner: "Taman Panorama Bukittinggi",
@@ -119,7 +88,7 @@ export const products: Product[] = [
     city: "Lima Puluh Kota",
     province: SUMBAR,
     price: 15000,
-    unit: "/orang",
+    unit: "person",
     rating: 4.8,
     reviews: 742,
     partner: "Pokdarwis Harau",
@@ -136,7 +105,7 @@ export const products: Product[] = [
     city: "Tanah Datar",
     province: SUMBAR,
     price: 25000,
-    unit: "/orang",
+    unit: "person",
     rating: 4.7,
     reviews: 1105,
     partner: "Dinas Pariwisata Tanah Datar",
@@ -154,7 +123,7 @@ export const products: Product[] = [
     province: SUMBAR,
     price: 250000,
     originalPrice: 300000,
-    unit: "/orang",
+    unit: "person",
     rating: 4.9,
     reviews: 388,
     partner: "Mandeh Bahari Tour",
@@ -171,7 +140,7 @@ export const products: Product[] = [
     city: "Padang",
     province: SUMBAR,
     price: 10000,
-    unit: "/orang",
+    unit: "person",
     rating: 4.5,
     reviews: 1520,
     partner: "Pemko Padang",
@@ -188,7 +157,7 @@ export const products: Product[] = [
     city: "Parapat",
     province: "Sumatera Utara",
     price: 350000,
-    unit: "/orang",
+    unit: "person",
     rating: 4.7,
     reviews: 512,
     partner: "Toba Explore",
@@ -205,7 +174,7 @@ export const products: Product[] = [
     city: "Kerinci",
     province: "Jambi",
     price: 200000,
-    unit: "/orang",
+    unit: "person",
     rating: 4.6,
     reviews: 204,
     partner: "Kerinci Adventure",
@@ -224,7 +193,7 @@ export const products: Product[] = [
     city: "Kepulauan Mentawai",
     province: SUMBAR,
     price: 3500000,
-    unit: "/kamar/malam",
+    unit: "roomNight",
     rating: 4.9,
     reviews: 186,
     partner: "Mentawai Surf Resort",
@@ -242,7 +211,7 @@ export const products: Product[] = [
     province: SUMBAR,
     price: 650000,
     originalPrice: 750000,
-    unit: "/kamar/malam",
+    unit: "roomNight",
     rating: 4.8,
     reviews: 402,
     partner: "Harau Valley Ecolodge",
@@ -259,7 +228,7 @@ export const products: Product[] = [
     city: "Bukittinggi",
     province: SUMBAR,
     price: 850000,
-    unit: "/kamar/malam",
+    unit: "roomNight",
     rating: 4.6,
     reviews: 731,
     partner: "Ngarai View Hotel",
@@ -276,7 +245,7 @@ export const products: Product[] = [
     city: "Agam",
     province: SUMBAR,
     price: 450000,
-    unit: "/kamar/malam",
+    unit: "roomNight",
     rating: 4.7,
     reviews: 298,
     partner: "Maninjau Lakeside",
@@ -293,7 +262,7 @@ export const products: Product[] = [
     city: "Tanah Datar",
     province: SUMBAR,
     price: 300000,
-    unit: "/kamar/malam",
+    unit: "roomNight",
     rating: 4.8,
     reviews: 154,
     partner: "Pokdarwis Nagari Pariangan",
@@ -310,7 +279,7 @@ export const products: Product[] = [
     city: "Pesisir Selatan",
     province: SUMBAR,
     price: 1250000,
-    unit: "/kamar/malam",
+    unit: "roomNight",
     rating: 4.7,
     reviews: 221,
     partner: "Mandeh Bahari",
@@ -327,7 +296,7 @@ export const products: Product[] = [
     city: "Samosir",
     province: "Sumatera Utara",
     price: 700000,
-    unit: "/kamar/malam",
+    unit: "roomNight",
     rating: 4.6,
     reviews: 340,
     partner: "Samosir Lakeview",
@@ -346,7 +315,7 @@ export const products: Product[] = [
     city: "Padang",
     province: SUMBAR,
     price: 3500000,
-    unit: "/unit/hari",
+    unit: "unitDay",
     rating: 4.8,
     reviews: 132,
     partner: "Minang Trans Wisata",
@@ -363,7 +332,7 @@ export const products: Product[] = [
     city: "Bukittinggi",
     province: SUMBAR,
     price: 2500000,
-    unit: "/unit/hari",
+    unit: "unitDay",
     rating: 4.7,
     reviews: 98,
     partner: "Minang Trans Wisata",
@@ -380,7 +349,7 @@ export const products: Product[] = [
     city: "Padang",
     province: SUMBAR,
     price: 1300000,
-    unit: "/unit/hari",
+    unit: "unitDay",
     rating: 4.8,
     reviews: 211,
     partner: "Ranah Minang Rent",
@@ -398,7 +367,7 @@ export const products: Product[] = [
     province: SUMBAR,
     price: 750000,
     originalPrice: 850000,
-    unit: "/unit/hari",
+    unit: "unitDay",
     rating: 4.9,
     reviews: 487,
     partner: "Ranah Minang Rent",
@@ -415,7 +384,7 @@ export const products: Product[] = [
     city: "Bukittinggi",
     province: SUMBAR,
     price: 400000,
-    unit: "/unit/hari",
+    unit: "unitDay",
     rating: 4.5,
     reviews: 265,
     partner: "Jam Gadang Rent Car",
@@ -431,7 +400,7 @@ export const products: Product[] = [
     city: "Padang Pariaman",
     province: SUMBAR,
     price: 120000,
-    unit: "/orang",
+    unit: "person",
     rating: 4.6,
     reviews: 890,
     partner: "Minang Shuttle",
@@ -448,7 +417,7 @@ export const products: Product[] = [
     city: "Padang",
     province: SUMBAR,
     price: 300000,
-    unit: "/orang",
+    unit: "person",
     rating: 4.5,
     reviews: 412,
     partner: "Mentawai Fast",
@@ -458,15 +427,16 @@ export const products: Product[] = [
     emoji: "⛴️",
   },
 
-  // ---------------- OLEH-OLEH ----------------
+  // ---------------- PASA MALEWA (oleh-oleh & perlengkapan trip) ----------------
   {
     slug: "rendang-daging-500g",
-    category: "oleh-oleh",
+    category: "pasa",
+    sub: "kuliner",
     name: "Rendang Daging Sapi 500 gr",
     city: "Padang",
     province: SUMBAR,
     price: 175000,
-    unit: "/pak",
+    unit: "pack",
     rating: 4.9,
     reviews: 2310,
     partner: "Rendang Uni Ros",
@@ -478,12 +448,13 @@ export const products: Product[] = [
   },
   {
     slug: "keripik-balado-250g",
-    category: "oleh-oleh",
+    category: "pasa",
+    sub: "kuliner",
     name: "Keripik Sanjai Balado 250 gr",
     city: "Bukittinggi",
     province: SUMBAR,
     price: 35000,
-    unit: "/pak",
+    unit: "pack",
     rating: 4.8,
     reviews: 3021,
     partner: "Sanjai Ummi Aufa",
@@ -494,12 +465,13 @@ export const products: Product[] = [
   },
   {
     slug: "galamai-payakumbuh",
-    category: "oleh-oleh",
+    category: "pasa",
+    sub: "kuliner",
     name: "Galamai Payakumbuh",
     city: "Payakumbuh",
     province: SUMBAR,
     price: 30000,
-    unit: "/kotak",
+    unit: "box",
     rating: 4.7,
     reviews: 640,
     partner: "Galamai Mak Etek",
@@ -510,12 +482,13 @@ export const products: Product[] = [
   },
   {
     slug: "kopi-kawa-daun",
-    category: "oleh-oleh",
+    category: "pasa",
+    sub: "kuliner",
     name: "Kopi Kawa Daun Kering",
     city: "Tanah Datar",
     province: SUMBAR,
     price: 40000,
-    unit: "/pak",
+    unit: "pack",
     rating: 4.6,
     reviews: 318,
     partner: "Kawa Daun Tabek Patah",
@@ -526,12 +499,13 @@ export const products: Product[] = [
   },
   {
     slug: "songket-pandai-sikek",
-    category: "oleh-oleh",
+    category: "pasa",
+    sub: "kerajinan",
     name: "Kain Songket Pandai Sikek",
     city: "Tanah Datar",
     province: SUMBAR,
     price: 1500000,
-    unit: "/lembar",
+    unit: "sheet",
     rating: 4.9,
     reviews: 87,
     partner: "Tenun Pandai Sikek",
@@ -542,28 +516,30 @@ export const products: Product[] = [
   },
   {
     slug: "kaos-jam-gadang",
-    category: "oleh-oleh",
+    category: "pasa",
+    sub: "kerajinan",
     name: "Kaos Malewa Edisi Jam Gadang",
     city: "Bukittinggi",
     province: SUMBAR,
     price: 95000,
-    unit: "/pcs",
+    unit: "piece",
     rating: 4.7,
     reviews: 152,
-    partner: "Malewa Merchandise",
+    partner: "Pasa Malewa",
     description: "Kaos katun combed 30s dengan desain ilustrasi Jam Gadang eksklusif Malewa Holiday.",
     highlights: ["Katun combed 30s", "Ukuran S - XXL", "Sablon plastisol"],
     colors: ["#111111", "#fbb900"],
     emoji: "👕",
   },
   {
-    slug: "bika-ambon-medan",
-    category: "oleh-oleh",
+    slug: "bolu-meranti-medan",
+    category: "pasa",
+    sub: "kuliner",
     name: "Bolu Meranti Medan",
     city: "Medan",
     province: "Sumatera Utara",
     price: 90000,
-    unit: "/kotak",
+    unit: "box",
     rating: 4.8,
     reviews: 950,
     partner: "Toko Oleh-oleh Medan",
@@ -571,6 +547,109 @@ export const products: Product[] = [
     highlights: ["Rasa keju / cokelat", "Tahan 5 hari"],
     colors: ["#78350f", "#fde68a"],
     emoji: "🍰",
+  },
+  {
+    slug: "handuk-saset-10",
+    category: "pasa",
+    sub: "perlengkapan",
+    name: "Handuk Saset Kompres (isi 10)",
+    city: "Padang",
+    province: SUMBAR,
+    price: 25000,
+    unit: "pack",
+    rating: 4.7,
+    reviews: 534,
+    partner: "Pasa Malewa",
+    description: "Handuk katun kompres seukuran permen, mengembang jadi handuk wajah 30x30 cm saat dibasahi. Praktis untuk trekking, pantai, dan perjalanan bus.",
+    highlights: ["Isi 10 butir", "Katun 100%", "Bisa dipakai ulang"],
+    colors: ["#0f766e", "#99f6e4"],
+    emoji: "🧻",
+  },
+  {
+    slug: "tas-travel-lipat-40l",
+    category: "pasa",
+    sub: "perlengkapan",
+    name: "Tas Traveling Lipat 40L",
+    city: "Padang",
+    province: SUMBAR,
+    price: 145000,
+    originalPrice: 175000,
+    unit: "piece",
+    rating: 4.8,
+    reviews: 276,
+    partner: "Pasa Malewa",
+    description: "Tas duffel ringan yang bisa dilipat sekecil dompet. Muat untuk oleh-oleh tambahan sepulang liburan.",
+    highlights: ["Kapasitas 40 liter", "Bahan nilon anti air", "Bisa diselipkan ke gagang koper"],
+    colors: ["#1f2937", "#e8572a"],
+    emoji: "🎒",
+  },
+  {
+    slug: "bantal-leher-memory-foam",
+    category: "pasa",
+    sub: "perlengkapan",
+    name: "Bantal Leher Memory Foam",
+    city: "Padang",
+    province: SUMBAR,
+    price: 89000,
+    unit: "piece",
+    rating: 4.6,
+    reviews: 198,
+    partner: "Pasa Malewa",
+    description: "Teman tidur di bus pariwisata dan pesawat. Busa memory foam yang menyangga leher dengan sarung yang bisa dicuci.",
+    highlights: ["Memory foam", "Sarung bisa dicuci", "Bonus penutup mata"],
+    colors: ["#4c1d95", "#c4b5fd"],
+    emoji: "😴",
+  },
+  {
+    slug: "dry-bag-10l",
+    category: "pasa",
+    sub: "perlengkapan",
+    name: "Dry Bag Tahan Air 10L",
+    city: "Pesisir Selatan",
+    province: SUMBAR,
+    price: 75000,
+    unit: "piece",
+    rating: 4.8,
+    reviews: 341,
+    partner: "Pasa Malewa",
+    description: "Wajib dibawa untuk island hopping Mandeh dan trip ke Mentawai. Ponsel, dompet, dan pakaian tetap kering.",
+    highlights: ["Kapasitas 10 liter", "Tali selempang", "Tahan percikan & terendam singkat"],
+    colors: ["#0369a1", "#fbb900"],
+    emoji: "🌊",
+  },
+  {
+    slug: "jas-hujan-ponco",
+    category: "pasa",
+    sub: "perlengkapan",
+    name: "Jas Hujan Ponco Trekking",
+    city: "Bukittinggi",
+    province: SUMBAR,
+    price: 65000,
+    unit: "piece",
+    rating: 4.5,
+    reviews: 122,
+    partner: "Pasa Malewa",
+    description: "Ponco ringan yang juga menutupi ransel. Cocok untuk cuaca dataran tinggi Bukittinggi dan Lembah Harau yang cepat berubah.",
+    highlights: ["Menutupi ransel", "Lipat jadi kantong kecil", "Ukuran all size"],
+    colors: ["#166534", "#fde047"],
+    emoji: "🧥",
+  },
+  {
+    slug: "travel-kit-toiletries",
+    category: "pasa",
+    sub: "perlengkapan",
+    name: "Travel Kit Toiletries 6-in-1",
+    city: "Padang",
+    province: SUMBAR,
+    price: 45000,
+    unit: "pack",
+    rating: 4.6,
+    reviews: 287,
+    partner: "Pasa Malewa",
+    description: "Sabun, sampo, sikat gigi, pasta gigi, sisir, dan botol semprot dalam pouch transparan. Lolos aturan cairan kabin pesawat.",
+    highlights: ["6 item lengkap", "Pouch transparan", "Ramah kabin pesawat"],
+    colors: ["#be185d", "#fbcfe8"],
+    emoji: "🧴",
   },
 ];
 
@@ -582,8 +661,24 @@ export function getProduct(slug: string) {
   return products.find((p) => p.slug === slug);
 }
 
-export function productsByCategory(slug: CategorySlug) {
+export function productsByCategory(slug: string) {
   return products.filter((p) => p.category === slug);
+}
+
+/** Untuk beranda: ambil produk bergiliran per sub-kategori supaya isi Pasa Malewa terlihat beragam. */
+export function featuredByCategory(slug: string, n = 4) {
+  const list = productsByCategory(slug);
+  const groups = new Map<string, Product[]>();
+  for (const p of list) groups.set(p.sub ?? "", [...(groups.get(p.sub ?? "") ?? []), p]);
+  if (groups.size <= 1) return list.slice(0, n);
+  const out: Product[] = [];
+  const queues = [...groups.values()];
+  for (let i = 0; out.length < n && i < list.length; i++) {
+    const q = queues[i % queues.length];
+    const next = q.shift();
+    if (next) out.push(next);
+  }
+  return out;
 }
 
 export const cities = Array.from(new Set(products.map((p) => p.city))).sort();
