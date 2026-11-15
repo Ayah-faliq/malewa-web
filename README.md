@@ -38,7 +38,7 @@ Butuh Node.js 20+ dan PostgreSQL.
 cp .env.example .env        # isi DATABASE_URL, AUTH_SECRET, SEED_ADMIN_PASSWORD
 npm install
 npm run db:migrate          # buat tabel
-npm run db:seed             # isi data contoh + akun admin
+npm run db:seed:local       # isi data contoh + akun admin
 npm run dev                 # http://localhost:3000
 ```
 
@@ -47,9 +47,11 @@ npm run dev                 # http://localhost:3000
 1. Login ke vercel.com dengan akun GitHub, lalu **Add New → Project** dan pilih repo `malewa-web`.
 2. Di tab **Storage**, tambahkan database Postgres (misalnya Neon) dan sambungkan ke project. `DATABASE_URL` terisi otomatis.
 3. (Opsional, untuk upload foto) tambahkan **Blob** store. `BLOB_READ_WRITE_TOKEN` terisi otomatis.
-4. Di **Settings → Environment Variables**, tambahkan `AUTH_SECRET` (string acak ≥ 32 karakter).
-5. Deploy. Script `vercel-build` otomatis menjalankan migrasi database.
-6. Sekali saja, isi data awal dari komputer: salin `DATABASE_URL` produksi ke `.env`, isi `SEED_ADMIN_PASSWORD` yang kuat, lalu `npm run db:seed`.
+4. Di **Settings → Environment Variables**, tambahkan:
+   - `AUTH_SECRET`: string acak ≥ 32 karakter
+   - `SEED_ADMIN_EMAIL`: email login admin
+   - `SEED_ADMIN_PASSWORD`: password admin yang kuat
+5. Deploy. Script `vercel-build` otomatis menjalankan migrasi database, membuat akun admin, dan mengisi data contoh **hanya jika database masih kosong** (data mitra tidak pernah tertimpa).
 
 ## Struktur
 

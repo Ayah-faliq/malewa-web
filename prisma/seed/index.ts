@@ -18,6 +18,14 @@ async function main() {
     create: { email: adminEmail, name: "Admin Malewa", role: "ADMIN", passwordHash: await bcrypt.hash(adminPassword, 10) },
   });
 
+  // Data contoh hanya diisi saat database masih kosong, supaya data asli mitra tidak tertimpa
+  // ketika seed ikut berjalan di setiap deploy. Paksa isi ulang dengan: npm run db:seed -- --force
+  const force = process.argv.includes("--force");
+  if (!force && (await db.product.count()) > 0) {
+    console.log("Database sudah berisi produk, data contoh dilewati. Akun admin sudah dipastikan ada.");
+    return;
+  }
+
   // Satu mitra per nama mitra di data contoh
   const partnerIds = new Map<string, string>();
   for (const p of seedProducts) {

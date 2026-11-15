@@ -9,9 +9,10 @@
     "lint": "eslint",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:seed": "tsx --env-file=.env prisma/seed/index.ts",
+    "db:seed": "tsx prisma/seed/index.ts",
     "postinstall": "prisma generate",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build"
+    "vercel-build": "prisma generate && prisma migrate deploy && npm run db:seed && next build",
+    "db:seed:local": "tsx --env-file=.env prisma/seed/index.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
